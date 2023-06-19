@@ -1,15 +1,17 @@
 package com.crakac.blenc.repo
 
-import android.Manifest
-import android.annotation.SuppressLint
+import android.Manifest.permission.BLUETOOTH_SCAN
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.ScanCallback
+import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
+import android.bluetooth.le.ScanSettings
 import android.content.Context
-import android.content.pm.PackageManager
-import androidx.core.app.ActivityCompat
+import android.os.ParcelUuid
+import androidx.annotation.RequiresPermission
 import androidx.core.content.getSystemService
+import com.crakac.blenc.ble.server.GattEchoServer
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -22,17 +24,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import timber.log.Timber
+import javax.inject.Inject
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-private val BluetoothPermissions = arrayOf(
-    Manifest.permission.BLUETOOTH_SCAN,
-    Manifest.permission.BLUETOOTH_CONNECT,
-    Manifest.permission.BLUETOOTH_ADVERTISE
-)
-
-@SuppressLint("MissingPermission")
-class BleDeviceRepository(
+class BleDeviceRepository @Inject constructor(
     @ApplicationContext private val context: Context,
 ) {
     private val coroutineScope =
@@ -78,29 +74,27 @@ class BleDeviceRepository(
         }
     }
 
+    @RequiresPermission(allOf = [BLUETOOTH_SCAN])
     suspend fun startScan(duration: Duration = 10.seconds) {
-        if (!permissionGranted()) return
         coroutineScope.launch {
-            scanner.startScan(scannerCallback)
+            val filter = ScanFilter.Builder()
+                .setServiceUuid(ParcelUuid(GattEchoServer.EchoServiceUUID))
+                .build()
+            val settings = ScanSettings.Builder()
+                .setScanMode(ScanSettings.SCAN_MODE_BALANCED)
+                .build()
+            scanner.startScan(listOf(filter), settings, scannerCallback)
             delay(duration)
             stopScan()
         }
     }
 
+    @RequiresPermission(allOf = [BLUETOOTH_SCAN])
     fun stopScan() {
-        if (!permissionGranted()) return
         scanner.stopScan(scannerCallback)
     }
 
-    private fun permissionGranted(): Boolean {
-        return BluetoothPermissions.all { permission ->
-            ActivityCompat.checkSelfPermission(
-                context,
-                permission
-            ) == PackageManager.PERMISSION_GRANTED
-        }
-    }
-
+    @RequiresPermission(allOf = [BLUETOOTH_SCAN])
     fun clear() {
         stopScan()
         devices.clear()

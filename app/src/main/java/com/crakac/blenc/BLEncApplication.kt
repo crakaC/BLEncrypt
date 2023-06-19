@@ -1,6 +1,7 @@
 package com.crakac.blenc
 
 import android.app.Application
+import com.crakac.blenc.util.DebugTree
 import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber
 
@@ -8,6 +9,6 @@ import timber.log.Timber
 class BLEncApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        Timber.plant(Timber.DebugTree())
+        Timber.plant(DebugTree())
     }
 }

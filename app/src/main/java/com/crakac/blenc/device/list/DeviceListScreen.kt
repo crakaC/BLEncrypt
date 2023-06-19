@@ -57,6 +57,11 @@ fun DeviceListScreen(onClickItem: (String) -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Button(onClick = {
+                viewModel.startAdvertising()
+            }) {
+                Text("Advertise!")
+            }
+            Button(onClick = {
                 viewModel.startScan()
             }) {
                 Text("Scan!")
