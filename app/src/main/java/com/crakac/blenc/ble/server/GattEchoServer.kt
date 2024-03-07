@@ -40,7 +40,7 @@ class GattEchoServer @Inject @RequiresPermission(BLUETOOTH_CONNECT) constructor(
 ) : BluetoothGattServerCallback() {
 
     companion object {
-        val EchoServiceUUID = UUID.fromString("eb5ac374-b364-4b90-bf05-0000000000")
+        val EchoServiceUUID: UUID = UUID.fromString("eb5ac374-b364-4b90-bf05-0000000000")
         private val CharacteristicUUID = UUID.fromString("eb5ac374-b364-4b90-bf05-0000000001")
         private val DescriptorUUID = UUID.fromString("eb5ac374-b364-4b90-bf05-0000000002")
     }
